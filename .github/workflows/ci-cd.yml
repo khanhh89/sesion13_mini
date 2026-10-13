@@ -106,84 +106,23 @@ jobs:
           script: |
             mkdir -p ~/campus-hub && cd ~/campus-hub
 
-            # Pull latest images from Docker Hub
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/campus-hub-backend:latest
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/campus-hub-frontend:latest
+            # Download docker-compose.yml from repository
+            curl -sSL https://raw.githubusercontent.com/khanhh89/sesion13_mini/main/docker-compose.yml -o docker-compose.yml
 
-            # Create .env
-            echo "DB_NAME=campus_hub" > .env
+            # Generate .env configuration
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+            echo "IMAGE_TAG=latest" >> .env
+            echo "DB_NAME=campus_hub" >> .env
             echo "DB_USERNAME=root" >> .env
             echo "DB_PASSWORD=123456" >> .env
             echo "CORS_ALLOWED_ORIGINS=*" >> .env
 
-            # Create docker-compose.yml
-            cat << 'EOF' > docker-compose.yml
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: campus-hub-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: campus_hub
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p123456"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - campus-network
-
-  backend:
-    image: BACKEND_IMAGE_TAG
-    container_name: campus-hub-backend
-    restart: unless-stopped
-    environment:
-      DB_URL: jdbc:mysql://mysql:3306/campus_hub?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
-      DB_USERNAME: root
-      DB_PASSWORD: 123456
-      SERVER_PORT: 8080
-      CORS_ALLOWED_ORIGINS: "*"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    networks:
-      - campus-network
-
-  frontend:
-    image: FRONTEND_IMAGE_TAG
-    container_name: campus-hub-frontend
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - campus-network
-
-volumes:
-  mysql_data:
-
-networks:
-  campus-network:
-    driver: bridge
-EOF
-
-            sed -i "s|BACKEND_IMAGE_TAG|${{ secrets.DOCKERHUB_USERNAME }}/campus-hub-backend:latest|g" docker-compose.yml
-            sed -i "s|FRONTEND_IMAGE_TAG|${{ secrets.DOCKERHUB_USERNAME }}/campus-hub-frontend:latest|g" docker-compose.yml
-
-            # Restart services
+            # Pull images and start containers
+            docker compose pull
             docker compose down || true
             docker compose up -d
 
-            # Verify
+            # Check status
             sleep 5
             docker compose ps
 
