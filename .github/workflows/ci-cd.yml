@@ -104,6 +104,26 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
           script: |
+            # Ensure curl and docker compose are available
+            if ! command -v curl &> /dev/null; then
+              apt-get update && apt-get install -y curl
+            fi
+            if ! docker compose version &> /dev/null && ! command -v docker-compose &> /dev/null; then
+              apt-get update && apt-get install -y docker-compose-plugin || apt-get install -y docker-compose || true
+              if ! docker compose version &> /dev/null && ! command -v docker-compose &> /dev/null; then
+                curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                chmod +x /usr/local/bin/docker-compose
+              fi
+            fi
+
+            # Determine docker compose command
+            COMPOSE_CMD="docker compose"
+            if ! docker compose version &> /dev/null; then
+              if command -v docker-compose &> /dev/null; then
+                COMPOSE_CMD="docker-compose"
+              fi
+            fi
+
             mkdir -p ~/campus-hub && cd ~/campus-hub
 
             # Download docker-compose.yml from repository
@@ -118,11 +138,11 @@ jobs:
             echo "CORS_ALLOWED_ORIGINS=*" >> .env
 
             # Pull images and start containers
-            docker compose pull
-            docker compose down || true
-            docker compose up -d
+            $COMPOSE_CMD pull
+            $COMPOSE_CMD down || true
+            $COMPOSE_CMD up -d
 
             # Check status
             sleep 5
-            docker compose ps
+            $COMPOSE_CMD ps
 
