@@ -20,6 +20,7 @@ services:
       - campus-network
 
   backend:
+    image: ${DOCKERHUB_USERNAME:-local}/campus-hub-backend:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -40,6 +41,7 @@ services:
       - campus-network
 
   frontend:
+    image: ${DOCKERHUB_USERNAME:-local}/campus-hub-frontend:${IMAGE_TAG:-latest}
     build:
       context: ./frontend
       dockerfile: Dockerfile
