@@ -1,4 +1,64 @@
-# Campus Hub Base
+# BÀI KIỂM TRA ĐẦU GIỜ — ĐÓNG GÓI VÀ CHẠY CAMPUS HUB VỚI DOCKER
+
+## Thông tin sinh viên
+- **Họ và tên:** DAO XUAN KHANH
+- **Mã sinh viên:** 123
+- **Lớp:** CNTT4
+- **Repository:** https://github.com/khanhh89/sesion13_mini
+
+---
+
+## 1. Lệnh dùng để chạy hệ thống
+
+### Bước 1: Kiểm thử Backend với Gradle
+```bash
+cd backend
+./gradlew test
+cd ..
+```
+
+### Bước 2: Build Docker Image cho Backend
+```bash
+docker build -t campus-hub-backend ./backend
+```
+
+### Bước 3: Khởi chạy hệ thống bằng Docker Compose
+```bash
+docker compose up -d --build
+```
+
+### Bước 4: Kiểm tra trạng thái các service
+```bash
+docker compose ps
+```
+
+---
+
+## 2. Cổng và URL dùng để kiểm tra Backend
+
+- **Backend API:** `http://localhost:8080/api`
+- **Health Check Endpoint:** `http://localhost:8080/actuator/health`
+- **Frontend Web UI:** `http://localhost:80`
+
+---
+
+## 3. Minh chứng kết quả thực hiện
+
+### 3.1. Docker Image đã build thành công
+> Chạy lệnh `docker images` thể hiện Docker Image của backend đã được build thành công.
+![Docker Image backend đã build](screenshots/docker_images.png)
+
+### 3.2. Trạng thái các service sau khi chạy Compose
+> Chạy lệnh `docker compose ps` thể hiện cả hai service (backend và MySQL) đã khởi động và duy trì trạng thái hoạt động.
+![Trạng thái Docker Compose](screenshots/docker_compose_ps.png)
+
+### 3.3. Kết quả gọi /actuator/health
+> Gọi endpoint `/actuator/health` trả về mã HTTP 200 và trạng thái `UP`.
+![Kết quả Actuator Health](screenshots/check.png)
+
+---
+
+# Giới thiệu dự án gốc Campus Hub Base
 
 Campus Hub là dự án nền cho Mini Project Session 13. Ứng dụng cung cấp một không gian chung để sinh viên đăng sự kiện, tìm đồ thất lạc, hỏi đáp, trao đổi đồ dùng và tìm nhóm.
 
